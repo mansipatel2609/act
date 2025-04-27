@@ -1,0 +1,72 @@
+diff --git a/sim_env.py b/sim_env.py
+--- a/sim_env.py
++++ b/sim_env.py
+@@
+ BOX_POSE = [None]  # to be changed from outside
+
++# ----------------- TOUCH TWO BLOCKS SEQUENCE TASK ----------------- #
++class TouchTwoBlocksSequenceTask(BimanualViperXTask):
++    """Touch Block A → Block B → Block A again."""
++    def __init__(self, random=None):
++        super().__init__(random=random)
++        self.stage = 0   # 0: need A, 1: need B, 2: need A again, 3: done
++        self.max_reward = 3
++
++    def initialize_episode(self, physics):
++        # reset both arms and two free blocks
++        with physics.reset_context():
++            physics.named.data.qpos[:16] = START_ARM_POSE
++            np.copyto(physics.data.ctrl, START_ARM_POSE)
++            # Expect 14 qpos values (7 for each free joint) passed via BOX_POSE[0]
++            assert BOX_POSE[0] is not None, "BOX_POSE must be set with 14 values (two 7‑DoF free joints)"
++            physics.named.data.qpos[-14:] = BOX_POSE[0]
++        self.stage = 0
++        super().initialize_episode(physics)
++
++    @staticmethod
++    def get_env_state(physics):
++        return physics.data.qpos.copy()[16:]
++
++    def get_reward(self, physics):
++        # Build list of contact geom pairs
++        pairs = []
++        for i in range(physics.data.ncon):
++            g1 = physics.model.id2name(physics.data.contact[i].geom1, 'geom')
++            g2 = physics.model.id2name(physics.data.contact[i].geom2, 'geom')
++            pairs.append((g1, g2))
++
++        # Helper to check if either gripper finger touches the block
++        def touched(block_name):
++            return (block_name, "vx300s_left/10_left_gripper_finger") in pairs or \
++                   (block_name, "vx300s_right/10_right_gripper_finger") in pairs
++
++        reward = 0
++        # Stage progression: A (red) -> B (blue) -> A (red)
++        if self.stage == 0 and touched("block_a"):
++            self.stage = 1
++            reward = 1
++        elif self.stage == 1 and touched("block_b"):
++            self.stage = 2
++            reward = 2
++        elif self.stage == 2 and touched("block_a"):
++            self.stage = 3
++            reward = 3  # episode success
++        return reward
++
+@@
+-    elif 'sim_insertion' in task_name:
++    elif 'sim_insertion' in task_name:
+         # existing insertion task branch...
+         pass
++    elif 'sim_touch_two_blocks' in task_name:
++        xml_path = os.path.join(XML_DIR, 'bimanual_viperx_touch_two_blocks.xml')
++        physics = mujoco.Physics.from_xml_path(xml_path)
++        task = TouchTwoBlocksSequenceTask(random=False)
++        env = control.Environment(
++            physics,
++            task,
++            time_limit=20,
++            control_timestep=DT,
++            n_sub_steps=None,
++            flat_observation=False,
++        )

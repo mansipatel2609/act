@@ -1,0 +1,51 @@
+<mujoco>
+    <!-- Base scene, tables, cameras, etc. -->
+    <include file="scene.xml"/>
+    <!-- Robot arm definitions -->
+    <include file="vx300s_dependencies.xml"/>
+
+    <!-- Keep grippers welded to mocap bodies for easier teleop -->
+    <equality>
+        <weld body1="mocap_left"  body2="vx300s_left/gripper_link"  solref="0.01 1" solimp=".25 .25 0.001"/>
+        <weld body1="mocap_right" body2="vx300s_right/gripper_link" solref="0.01 1" solimp=".25 .25 0.001"/>
+    </equality>
+
+    <worldbody>
+        <!-- Two 6‑DoF robot arms -->
+        <include file="vx300s_left.xml"/>
+        <include file="vx300s_right.xml"/>
+
+        <!-- Mocap targets for end‑effectors (EE control) -->
+        <body mocap="true" name="mocap_left"  pos=" 0.095 0.50 0.425">
+            <site name="mocap_left_site1"  pos="0 0 0" size="0.003 0.003 0.03" type="box" rgba="1 0 0 1"/>
+            <site name="mocap_left_site2"  pos="0 0 0" size="0.003 0.03 0.003" type="box" rgba="1 0 0 1"/>
+            <site name="mocap_left_site3"  pos="0 0 0" size="0.03 0.003 0.003" type="box" rgba="1 0 0 1"/>
+        </body>
+
+        <body mocap="true" name="mocap_right" pos="-0.095 0.50 0.425">
+            <site name="mocap_right_site1" pos="0 0 0" size="0.003 0.003 0.03" type="box" rgba="1 0 0 1"/>
+            <site name="mocap_right_site2" pos="0 0 0" size="0.003 0.03 0.003" type="box" rgba="1 0 0 1"/>
+            <site name="mocap_right_site3" pos="0 0 0" size="0.03 0.003 0.003" type="box" rgba="1 0 0 1"/>
+        </body>
+
+        <!-- === Free blocks to touch in sequence === -->
+        <!-- Block A (red) -->
+        <body name="block_a" pos="0.20 0.50 0.05">
+            <joint  name="block_a_joint" type="free" frictionloss="0.01"/>
+            <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002"/>
+            <geom name="block_a" type="box" size="0.02 0.02 0.02" rgba="1 0 0 1"
+                  condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001"/>
+        </body>
+
+        <!-- Block B (blue) -->
+        <body name="block_b" pos="0.26 0.50 0.05">
+            <joint  name="block_b_joint" type="free" frictionloss="0.01"/>
+            <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002"/>
+            <geom name="block_b" type="box" size="0.02 0.02 0.02" rgba="0 0 1 1"
+                  condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001"/>
+        </body>
+    </worldbody>
+
+    <!-- Actuators are inherited from the included robot XMLs -->
+    <actuator/>
+</mujoco>
