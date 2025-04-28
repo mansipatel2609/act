@@ -1,0 +1,14 @@
+diff --git a/record_sim_episodes.py b/record_sim_episodes.py
+--- a/record_sim_episodes.py
++++ b/record_sim_episodes.py
+@@
+-    elif task_name == 'sim_insertion_scripted':
++    elif task_name == 'sim_insertion_scripted':
+         policy_cls = InsertionPolicy
+-    else:
+-        raise NotImplementedError
++    elif task_name == 'sim_touch_two_blocks':
++        # For now reuse PickAndTransferPolicy as a simple heuristic
++        policy_cls = PickAndTransferPolicy
++    else:
++        raise NotImplementedError
