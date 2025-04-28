@@ -39,6 +39,8 @@ def main(args):
         policy_cls = PickAndTransferPolicy
     elif task_name == 'sim_insertion_scripted':
         policy_cls = InsertionPolicy
+    elif task_name == 'sim_touch_two_blocks':          #  ← NEW
+        policy_cls = PickAndTransferPolicy  
     else:
         raise NotImplementedError
 
