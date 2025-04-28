@@ -48,11 +48,17 @@ def make_ee_sim_env(task_name):
         env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
     elif 'sim_touch_two_blocks' in task_name:
-        xml_path = os.path.join(XML_DIR, f'bimanual_viperx_ee_touch_two_blocks.xml')
+        xml_path = os.path.join(XML_DIR, 'bimanual_viperx_touch_two_blocks.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
-        task = TransferCubeEETask(random=False)
-        env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
-                                  n_sub_steps=None, flat_observation=False)
+        task = TouchTwoBlocksEETask(random=False)
+        env = control.Environment(
+            physics, task,
+            time_limit=20,
+            control_timestep=DT,
+            n_sub_steps=None,
+            flat_observation=False,
+        )
+
     else:
         raise NotImplementedError
     return env
