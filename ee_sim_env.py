@@ -59,6 +59,7 @@ def make_ee_sim_env(task_name):
             flat_observation=False,
         )
 
+
     else:
         raise NotImplementedError
     return env
@@ -277,3 +278,36 @@ class InsertionEETask(BimanualViperXEETask):
         if pin_touched: # successful insertion
             reward = 4
         return reward
+class TouchTwoBlocksEETask(BimanualViperXEETask):
+    """Touch Block A → Block B → Block A again (EE-control)."""
+    def __init__(self, random=None):
+        super().__init__(random=random)
+        self.stage = 0          # 0→A, 1→B, 2→A, 3=done
+        self.max_reward = 3
+
+    def initialize_episode(self, physics):
+        self.initialize_robots(physics)
+        pose_a = [0.20, 0.50, 0.05, 1, 0, 0, 0]
+        pose_b = [0.26, 0.50, 0.05, 1, 0, 0, 0]
+        physics.named.data.qpos['block_a_joint'] = pose_a
+        physics.named.data.qpos['block_b_joint'] = pose_b
+        self.stage = 0
+
+    def get_reward(self, physics):
+        pairs = {(physics.model.id2name(c.geom1, 'geom'),
+                  physics.model.id2name(c.geom2, 'geom'))
+                 for c in physics.data.contact[:physics.data.ncon]}
+
+        def touched(block):
+            return any(block in p and 'gripper_finger' in ''.join(p) for p in pairs)
+
+        if self.stage == 0 and touched('block_a'):
+            self.stage, reward = 1, 1
+        elif self.stage == 1 and touched('block_b'):
+            self.stage, reward = 2, 2
+        elif self.stage == 2 and touched('block_a'):
+            self.stage, reward = 3, 3
+        else:
+            reward = 0
+        return reward
+
