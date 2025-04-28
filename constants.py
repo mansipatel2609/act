@@ -3,6 +3,13 @@ import pathlib
 ### Task parameters
 DATA_DIR = '<put your data dir here>'
 SIM_TASK_CONFIGS = {
+    'sim_touch_two_blocks': {
+        'dataset_dir': DATA_DIR + '/sim_touch_two_blocks',
+        'num_episodes': 50,          # default if you don’t override on the CLI
+        'episode_len': 400,          # you can choose anything reasonable
+        'camera_names': ['top'],
+    },
+
     'sim_transfer_cube_scripted':{
         'dataset_dir': DATA_DIR + '/sim_transfer_cube_scripted',
         'num_episodes': 50,
